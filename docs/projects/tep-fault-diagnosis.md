@@ -36,8 +36,9 @@ I wanted something real enough that:
 - the data had structure
 - the model choice actually mattered
 - I would have to think about preprocessing, labels, and evaluation properly
+- at the same time, I wanted to learn via application in chemical processes
 
-TEP ended up being a really good fit for that.
+TEP ended up being a a perfect example of that.
 
 Why:
 
@@ -45,8 +46,9 @@ Why:
 - it contains many interacting variables instead of a single signal
 - faults appear over time, so time structure matters
 - the plant itself has a natural graph structure, which makes the GNN idea worth testing
+- it's literally data from a running chemical process 
 
-This is also why I like this project so much. The MLP, CNN, and GNN are not just three random models I picked. They are three different ways of representing the exact same problem.
+This is also why I enjoy working on this project so much. The MLP, CNN, and GNN are not just three random models I picked. They are three different ways of representing the exact same problem.
 
 ## What The Data Looks Like
 
@@ -78,19 +80,20 @@ That part mattered more than I expected because it affects how windows should be
 
 ## Windowing And Inputs
 
-The models do not just look at an entire run at once. I turn each run into sliding windows.
+The models do not just look at an entire simulation run at once. I turn each simulation run into multiple sliding windows.
 
 Current standard settings:
 
 - `window_size = 60`
 - `step_size = 10`
 
-Since each sample is 3 minutes, that means each window covers 3 hours.
+Since each sample is 3 minutes, that means each window covers 3 hours of process running.
 
 I use two dataset formats:
 
 - flattened windows for the MLP: `(N, 3120)`
 - 2D windows for CNN and GNN: `(N, 60, 52)`
+(N is the number of windows)
 
 This part sounds small, but it really drives most of the project. Once the window shape is set, it affects the model input, the labels, the training speed, and how fair the model comparison is.
 
@@ -102,9 +105,9 @@ There are three training pipelines:
 - `CNN`: a 1D convolutional model that keeps the time dimension intact
 - `GNN`: a graph model that uses both temporal edges and process edges
 
-All models are split by `simulationRun`, not random rows. I care about that because random row splitting would leak very similar windows into both train and validation.
+All models are trained on a split of simulationRuns. For example, if the generated dataset is of runs 1-20, then runs 1..15 will be for training and runs 16..20 for validation (where it doesn't learn).
 
-I also built dataset scripts and evaluation code so the comparison between the models stays consistent instead of becoming messy.
+I also built an evaluation script which is produces the same metrics for all three models, so the comparison between the models is consistent.
 
 ## Main Lessons So Far
 
@@ -112,9 +115,9 @@ The biggest thing I learned early is that a simple baseline can be a lot stronge
 
 The MLP works well enough that the more complicated models actually have to justify themselves.
 
-The second thing I learned is that time awareness really does matter here. The CNN improved the hardest confusion cases much more than the MLP.
+The second thing I learned is that time awareness really does matter here. The CNN improved the hardest confusion cases (based on per-fault accuracy and confusion matrix) much more than the MLP.
 
-The third thing is that the graph idea is interesting, but it is not automatically better just because the plant has structure. The GNN is slower, more complicated, and so far has been disappointing compared to the CNN.
+The third thing is that the graph idea is interesting, but it is not automatically better just because the plant has structure. The GNN is slower, more complicated, and so far has been disappointing (in my implementation) compared to the CNN.
 
 However, I do believe I did not implement the GNN properly. In my theory, it should have the highest accuracy, as a Chemical Process runs with lots of correlatons (edges) between the sensors (nodes).
 

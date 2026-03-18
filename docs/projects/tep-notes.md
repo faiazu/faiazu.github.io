@@ -10,11 +10,13 @@ Before getting into the models, I should explain what the Tennessee Eastman Proc
 
 The short version is that TEP is a chemical process simulation dataset. It models a plant with connected units, control actions, measured variables, manipulated variables, and different fault scenarios.
 
-What I like about it is that it does not just feel like random sensor data. It actually feels like a system. That is a big part of why the GNN idea made sense to try in the first place.
+What I like about it is that it does not just feel like random sensor data. It's a flow from one thing to another. That is a big part of why the GNN idea made sense to try in the first place.
 
 ![Tennessee Eastman Process flow diagram](/assets/images/projects/tep/TEP_flow_diagram.jpg)
 
-This flow diagram makes the dataset a lot easier to think about. Instead of seeing `xmeas_*` and `xmv_*` as disconnected variable names, you can actually place them onto parts of the process like the reactor, separator, stripper, recycle loop, purge, and product stream.
+This is just like the process flow diagrams I learned about in CHE113 (Concepts in Chemical Engineering).
+
+This flow diagram makes the dataset a lot easier to think about. Instead of seeing `xmeas_*` and `xmv_*` as disconnected variable names, you can actually place them onto parts of the process like the reactor, separator, stripper, recycle loop, purge, and product stream. I have yet to label where these sensors actually are, but I will do that.
 
 ## What TEP Represents
 
@@ -40,6 +42,10 @@ That is why TEP is such a good learning project for me. It gives me a reason to 
 
 ## What The Raw Files Contain
 
+I got the CSV version of the dataset from [this Kaggle dataset](https://www.kaggle.com/datasets/afrniomelo/tep-csv/).
+
+That version is derived from the original source here: [Harvard Dataverse](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/6C3JR1).
+
 The raw CSV download contains four files:
 
 - `TEP_FaultFree_Training.csv`
@@ -60,24 +66,24 @@ Important columns:
 What those mean:
 
 - `faultNumber`: the class label I want to predict
-- `simulationRun`: which run the row belongs to
-- `sample`: time index within that run
+- `simulationRun`: which run of the process that row belongs to
+- `sample`: time index within that run (every 3 mins a sample is taken)
 - `xmeas_*`: measured variables from the plant
 - `xmv_*`: manipulated variables that the control system can adjust
 
-The 52 process variables are the actual inputs to the models.
+The 52 process variables (xmeas_* & xmv_*) are the actual inputs to the models.
 
 > Visual placeholder: add a simple annotated table screenshot of one CSV row with arrows pointing to `faultNumber`, `simulationRun`, `sample`, `xmeas_*`, and `xmv_*`.
 
 ## Measured Vs Manipulated Variables
 
-One thing that makes TEP easier to think about is the difference between what the plant measures and what the control system changes.
+One thing about the TEP dataset that I didn't realize at first is the difference between what the plant measures and what the control system changes.
 
-`xmeas_*` are measured variables. These are sensor-like readings such as flows, temperatures, pressures, levels, and compositions.
+`xmeas_*` are measured variables. These are sensor readings such as flows, temperatures, pressures, levels, and compositions.
 
 `xmv_*` are manipulated variables. These are values the controller can change on purpose, such as valve positions or control actions.
 
-Some variables are telling you what the plant is doing. Others are telling you what the controller is changing. It also helps explain why a process graph is reasonable here. Some variables are related because they are in the same unit, some because material moves between them, and some because a manipulated variable directly affects a measured one.
+Some variables are telling you what the plant is doing. Others are telling you what the controller is changing. It also helps explain why a process graph connecting the sensor nodes makes sense here. Some variables are related because they are in the same process unit, some because material moves between them, and some because a manipulated variable directly affects a measured one.
 
 ## What The Sensor Values Actually Are
 
@@ -197,7 +203,18 @@ For the fault cases, the mapping is:
 | 19 | Unknown | Random variation |
 | 20 | Unknown | Random variation |
 
-This helps a lot when looking at results later, because some confusions are more understandable once you know what the faults actually are. A confusion between two similar temperature-related or cooling-related faults means something very different from a completely unrelated mix-up.
+What those fault types mean:
+
+- `Step`: the process variable changes suddenly and then stays shifted
+- `Random variation`: the fault shows up as noisy or fluctuating variation rather than one clean jump
+- `Slow drift`: the effect builds gradually over time instead of appearing all at once
+- `Sticking`: usually means a valve or actuator is not moving smoothly, so it can get stuck or respond in a jerky way
+
+This helps a lot when looking at results later, because some confusions make more sense once you know what the faults actually are. A confusion between two similar cooling-related faults means something very different from a completely unrelated mix-up.
+
+The models do not get these fault descriptions directly, and I do not manually tell them which sensors each fault should affect. They only see windows of sensor values and the final fault label.
+
+I want the models to learn from the process data itself, not from extra hand-given fault information. Google's data checklist says data leakage happens when a model uses "predictive information that won't be available at serving time" ([Google](https://services.google.com/fh/files/blogs/data-prep-checklist-ml-bd-wp-v2.pdf)), and IBM defines leakage as using information that "wouldn't be available at the time of prediction" ([IBM](https://www.ibm.com/think/topics/data-leakage-machine-learning)). In this project, if the process was running real time, we wouldn't have the exact faults and how they occur. The only data would be from the sensors, so that is what I want the models to rely on.
 
 > Visual placeholder: add a grouped fault chart showing step faults, random-variation faults, slow-drift faults, and sticking faults.
 
@@ -205,11 +222,11 @@ This helps a lot when looking at results later, because some confusions are more
 
 TEP works well for the kind of comparison I want to make.
 
-For the MLP, it asks whether a simple classifier can learn enough from flattened windows.
+For the MLP, it asks whether a simple classifier can learn enough from flattened windows (unaware of sample time).
 
 For the CNN, it asks whether local temporal patterns carry important information.
 
-For the GNN, it asks whether explicitly using the process structure helps beyond just treating everything like an array.
+For the GNN, it asks whether explicitly using the process structure helps beyond just treating all the sensors as an array.
 
 So the comparison feels fair. All three model families make sense on this dataset for different reasons.
 
