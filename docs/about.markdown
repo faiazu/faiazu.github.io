@@ -4,15 +4,14 @@ title: About
 permalink: /about/
 ---
 
-This is the base Jekyll theme. You can find out more info about customizing your Jekyll theme, as well as basic Jekyll usage documentation at [jekyllrb.com](https://jekyllrb.com/)
+My name is Faiaz Umaer.
 
-You can find the source code for Minima at GitHub:
-[jekyll][jekyll-organization] /
-[minima](https://github.com/jekyll/minima)
+I am a chemical engineering student at the University of Toronto. I am interested in machine learning, especially its applications in chemistry.
 
-You can find the source code for Jekyll at GitHub:
-[jekyll][jekyll-organization] /
-[jekyll](https://github.com/jekyll/jekyll)
+This website is where I share projects, notes, and things I am learning as I explore that intersection.
 
+Outside of school and projects, I like spending time outdoors and cooking.
 
-[jekyll-organization]: https://github.com/jekyll
+### &rarr; [View projects](/projects/)
+
+![Faiaz Umaer](/assets/images/profile/IMG_0092.jpeg)
