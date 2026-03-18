@@ -4,7 +4,7 @@ title: Projects
 permalink: /projects/
 ---
 
-## Tennessee Eastman Process Fault Diagnosis
+## 🏭 Tennessee Eastman Process Fault Diagnosis
 
 A project comparing MLP, CNN, and GNN models for chemical process fault classification.
 
