@@ -18,15 +18,11 @@ So these are not supposed to be the absolute best numbers the models could ever 
 
 Dataset files used:
 
-<div align="center">
-
 | Model | Dataset file | Input shape |
 | --- | --- | --- |
 | MLP | `data/processed/small_fault0_20_runs1_20_W60_step10.npz` | `(N, 3120)` |
 | CNN | `data/processed/small_fault0_20_runs1_20_W60_step10_2d.npz` | `(N, 60, 52)` |
 | GNN | `data/processed/small_fault0_20_runs1_20_W60_step10_2d.npz` | `(N, 60, 52)` |
-
-</div>
 
 Dataset build commands:
 
@@ -53,15 +49,11 @@ python src/evaluate_model.py --model gnn
 
 ## Overall Comparison
 
-<div align="center">
-
 | Model | Top-1 | Top-2 | Top-3 | Short read |
 | --- | --- | --- | --- | --- |
 | MLP | `69.71%` | `77.02%` | `80.99%` | stronger than I expected, but it still mixes up some faults badly |
 | CNN | `84.13%` | `88.93%` | `93.84%` | best result so far and the most reliable overall |
 | GNN | `32.11%` | `44.36%` | `52.49%` | basically my rough `SAGEConv` attempt, so not something I would call fully figured out yet |
-
-</div>
 
 The CNN is clearly the best model so far on this split. The MLP is still a good baseline. The GNN result needs more work done because it's pretty much just me trying `SAGEConv` / GraphSAGE on the TEP data via *vibe coding* before I fully understand how a graph neural network should really be set up.
 
@@ -70,8 +62,6 @@ Also, all of these numbers are from models trained for only `3` epochs. So I thi
 > Chart placeholder: add a grouped bar chart for top-1, top-2, and top-3 accuracy across MLP, CNN, and GNN.
 
 ## Per-Fault Accuracy Comparison
-
-<div align="center">
 
 | Fault | MLP | CNN | GNN |
 | --- | --- | --- | --- |
@@ -96,8 +86,6 @@ Also, all of these numbers are from models trained for only `3` epochs. So I thi
 | 18 | `92.44%` | `92.44%` | `29.33%` |
 | 19 | `75.56%` | `100.00%` | `88.44%` |
 | 20 | `93.78%` | `93.33%` | `0.00%` |
-
-</div>
 
 This is probably the most useful table on the page because it shows where each model actually works and where it falls apart. The CNN is the best overall, but it still completely misses faults `0` and `15`, and it only gets `8.44%` on fault `9`. The MLP is a lot less consistent, and the current GNN is still rough enough that I would not read too much into it yet.
 
